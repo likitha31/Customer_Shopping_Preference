@@ -13,7 +13,7 @@ Customer shopping preference refers to the specific choices and tendencies exhib
 5. What is the expected timeline for completing the data analysis and delivering results or insights?
 
 ## Dataset / Variables 
-[Link: Customer Shopping Trends Dataset (kaggle.com)](your_dataset_link_here)
+[Link: Customer Shopping Trends Dataset (kaggle.com)](https://www.kaggle.com/datasets/iamsouravbanerjee/customer-shopping-trends-dataset/data)
 
 Our dataset, sourced from Kaggle, consists of a rich array of attributes related to customer shopping preferences. It offers essential insights to augment our understanding of the customer base. Comprising 4100 rows and 18 columns, the dataset encompasses the following variables:
 
