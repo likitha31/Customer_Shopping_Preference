@@ -1,0 +1,9 @@
+Pre Processing : Replace null with 'no festival'
+EDA: * Product category sales vs season (correlation) -- K
+     * Either pie chart or donut chart ( subscription status and purchase) -- S
+     * Maps: frequency , colored by season -- LK
+     * item purchased vs category vs rating review (multivariant analysis) -- colourful table -- LK
+     * Frequency of purchases vs  by subscription vs category.-- S
+Models: * KNN. -- K
+        * Logistic regression, ROC AUC. -- S
+        * Random forrest or linear regression. -- LK
