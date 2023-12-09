@@ -75,8 +75,20 @@ df.isnull().sum()
 #
 #
 # %%[markdown]
-
+#%%
 # * Deduplication:
+
+# Assuming 'data' is your DataFrame
+duplicates = df.duplicated()
+
+# Counting the number of duplicate rows
+num_duplicates = duplicates.sum()
+print(f"Number of duplicate rows: {num_duplicates}")
+
+# If you want to see the duplicate rows
+duplicate_rows = df[duplicates]
+print(duplicate_rows)
+
 # 
 # Identify and remove duplicate records from the dataset to avoid redundancy and ensure accuracy in analysis.
 #
