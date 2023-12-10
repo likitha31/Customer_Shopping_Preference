@@ -35,6 +35,9 @@ warnings.filterwarnings("ignore")
 import os
 import geopandas as gpd
 import matplotlib.pyplot as plt
+from sklearn import preprocessing 
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 
@@ -210,6 +213,28 @@ fig.show()
 
 # %%[markdown]
 # # Correlation
+
+label_encoder = preprocessing.LabelEncoder()
+
+df['Gender'] = label_encoder.fit_transform(df['Gender'])
+df['Item Purchased'] = label_encoder.fit_transform(df['Item Purchased'])
+df['Category'] = label_encoder.fit_transform(df['Category'])
+df['Location'] = label_encoder.fit_transform(df['Location'])
+df['Size'] = label_encoder.fit_transform(df['Size'])
+df['Color'] = label_encoder.fit_transform(df['Color'])
+df['Season'] = label_encoder.fit_transform(df['Season'])
+df['Subscription Status'] = label_encoder.fit_transform(df['Subscription Status'])
+df['Shipping Type'] = label_encoder.fit_transform(df['Shipping Type'])
+df['Discount Applied'] = label_encoder.fit_transform(df['Discount Applied'])
+df['Promo Code Used'] = label_encoder.fit_transform(df['Promo Code Used'])
+df['Payment Method'] = label_encoder.fit_transform(df['Payment Method'])
+df['Frequency of Purchases'] = label_encoder.fit_transform(df['Frequency of Purchases'])
+
+plt.figure(figsize=(16,10))
+ax = sns.heatmap(df.corr(numeric_only=True), annot=True)
+plt.show()
+
+
 # 
 # Product category sales vs season
 
