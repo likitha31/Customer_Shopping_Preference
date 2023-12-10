@@ -300,12 +300,9 @@ plt.show()
 # Our objective is to unravel the intricate relationships between different features and the subscription outcome, shedding light on which variables exert the most significant influence in predicting subscription status. 
 # By leveraging these diverse modeling approaches, we aim to gain a comprehensive understanding of the interplay between various factors and the likelihood of subscription, ultimately contributing valuable insights to our predictive analytics framework.
 #
-# * KNN 
 # * Logistic regression
 # * Random Forest
-
-# %%[markdown]
-# # KNN
+# * KNN
 
 
 
@@ -406,75 +403,155 @@ print(f"AUC: {roc_auc:.2f}")
 # This information offers a comprehensive evaluation of the Random Forest model's performance in predicting subscription status. 
 # The final print statements communicate the accuracy and classification report for easy interpretation and assessment of the model's effectiveness.
 
-
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.impute import SimpleImputer
 
-
 # Check for missing values and fill them with the mode (most frequent value) for simplicity
-imputer = SimpleImputer(strategy='most_frequent')
-data_imputed = pd.DataFrame(imputer.fit_transform(new_df), columns=df.columns)
-
+mode_imputer = SimpleImputer(strategy='most_frequent')
+filled_data = pd.DataFrame(mode_imputer.fit_transform(new_df), columns=df.columns)
 
 # Encode categorical variables
-le = LabelEncoder()
-categorical_columns = data_imputed.select_dtypes(include=['object']).columns
-for column in categorical_columns:
-    data_imputed[column] = le.fit_transform(data_imputed[column].astype(str))
+encoder = LabelEncoder()
+object_columns = filled_data.select_dtypes(include=['object']).columns
+for col in object_columns:
+    filled_data[col] = encoder.fit_transform(filled_data[col].astype(str))
 
-
-# Define the feature matrix X and the target vector y
-X = data_imputed.drop(['Subscription Status'], axis=1)
-y = le.fit_transform(data_imputed['Subscription Status'].astype(str))
-
+# Define the feature matrix features_matrix and the target vector target_vector
+features_matrix = filled_data.drop(['Subscription Status'], axis=1)
+target_vector = encoder.fit_transform(filled_data['Subscription Status'].astype(str))
 
 # Split the data into a training set and a testing set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+features_train, features_test, target_train, target_test = train_test_split(features_matrix, target_vector, test_size=0.2, random_state=42)
 
 # Initialize the Random Forest classifier
-rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-
+forest_model = RandomForestClassifier(n_estimators=100, random_state=42)
 
 # Train the classifier
-rf_classifier.fit(X_train, y_train)
+forest_model.fit(features_train, target_train)
+predicted_train = forest_model.predict(features_train)
 
-
+# Calculate accuracy on the training set
+training_accuracy = accuracy_score(target_train, predicted_train)
 # Make predictions on the testing set
-y_pred = rf_classifier.predict(X_test)
-
+predicted_target = forest_model.predict(features_test)
 
 # Evaluate the model's performance
-accuracy = accuracy_score(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
+model_accuracy = accuracy_score(target_test, predicted_target)
+report_classification = classification_report(target_test, predicted_target)
+
+print(f"Training Accuracy of the Random Forest model: {training_accuracy:.2f}")
+print(f"Testing Accuracy of the Random Forest model: {model_accuracy:.2f}")
 
 # Print the model's performance
-print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
+print(f"Accuracy of the Random Forest model: {model_accuracy:.2f}")
 print("\nClassification Report:")
-print(classification_rep)
+print(report_classification)
 
-y_prob = rf_classifier.predict_proba(X_test)[:, 1]  # Probabilities for the positive class
-roc_auc = roc_auc_score(y_test, y_prob)
+predicted_prob = forest_model.predict_proba(features_test)[:, 1]  # Probabilities for the positive class
+roc_value = roc_auc_score(target_test, predicted_prob)
 
 # %%
-# # Cross Vlidation 
-
+# # Cross Validation
 from sklearn.model_selection import cross_val_score
 
 # ... [previous code for data loading, preprocessing, and Random Forest model setup] ...
 
 # Define the number of folds for cross-validation
-n_folds = 5
+cv_fold_count = 5
 
 # Perform cross-validation
-cv_scores = cross_val_score(rf_classifier, X, y, cv=n_folds)
+cv_results = cross_val_score(forest_model, features_matrix, target_vector, cv=cv_fold_count)
 
 # Print the results of cross-validation
-print(f"Cross-Validation Accuracy Scores for {n_folds} folds: {cv_scores}")
-print(f"Average CV Accuracy Score: {cv_scores.mean():.2f}")
+print(f"Cross-Validation Accuracy Scores for {cv_fold_count} folds: {cv_results}")
+print(f"Average CV Accuracy Score: {cv_results.mean():.2f}")
+
+# %%
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, accuracy_score
+
+# Dropping non-relevant columns and handling missing values if necessary
+# For simplicity, dropping columns with textual data and 'Random Date' as it's not directly relevant
+new_df = new_df.drop(['Customer ID', 'Item Purchased', 'Random Date', 'Festival'], axis=1)
+
+# Handling missing values - assuming filling with the most frequent value for simplicity
+new_df.fillna(new_df.mode().iloc[0], inplace=True)
+
+# Encoding categorical variables
+categorical_columns = new_df.select_dtypes(include=['object']).columns
+label_encoders = {col: LabelEncoder() for col in categorical_columns}
+for col in categorical_columns:
+    new_df[col] = label_encoders[col].fit_transform(df[col])
+
+# Splitting the data into features and target
+X = new_df.drop('Subscription Status', axis=1)
+y = new_df['Subscription Status']
+
+# Standardizing the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Applying KNN classifier
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+
+# Making predictions and evaluating the model
+y_pred_train = knn.predict(X_train)
+y_pred_test = knn.predict(X_test)
+train_accuracy = accuracy_score(y_train, y_pred_train)
+test_accuracy = accuracy_score(y_test, y_pred_test)
+
+train_accuracy, test_accuracy, classification_report(y_test, y_pred_test)
+
+
+
+# %%[markdown]
+
+# # KNN
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.impute import SimpleImputer
+from sklearn.neighbors import KNeighborsClassifier
+import pandas as pd
+
+
+
+# Define the feature matrix and the target vector
+features_matrix = filled_data.drop(['Subscription Status'], axis=1)
+target_vector = encoder.fit_transform(filled_data['Subscription Status'].astype(str))
+
+# Split the data into a training set and a testing set
+features_train, features_test, target_train, target_test = train_test_split(features_matrix, target_vector, test_size=0.2, random_state=42)
+
+# Initialize the KNN classifier
+knn_model = KNeighborsClassifier(n_neighbors=5)  # n_neighbors can be tuned
+
+# Train the classifier
+knn_model.fit(features_train, target_train)
+
+# Make predictions on the training and testing sets
+predicted_train_knn = knn_model.predict(features_train)
+predicted_test_knn = knn_model.predict(features_test)
+
+# Calculate and print the accuracies
+training_accuracy_knn = accuracy_score(target_train, predicted_train_knn)
+testing_accuracy_knn = accuracy_score(target_test, predicted_test_knn)
+
+print(f"Training Accuracy of the KNN model: {training_accuracy_knn:.2f}")
+print(f"Testing Accuracy of the KNN model: {testing_accuracy_knn:.2f}")
+
+# Additional evaluations (optional)
+print("\nClassification Report (Testing Set):")
+print(classification_report(target_test, predicted_test_knn))
 
 
 # %%
