@@ -150,6 +150,9 @@ plt.ylabel("Frequency of Purchases")
 plt.show()
 
 # %%[markdown]
+# product category sales by Season
+
+# %%[markdown]
 # # Maps
 #
 # Map of Locations Colored by average Purchase Amount (USD)
