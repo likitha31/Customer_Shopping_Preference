@@ -241,24 +241,41 @@ fig.show()
 #
 # Frequency of purchases vs  by subscription vs category.
 
+import pandas as pd
+import plotly.express as px
+#
+grouped = df.groupby(['Subscription Status', 'Payment Method']).size().reset_index(name='Count')
+fig = px.sunburst(
+    grouped,
+    path=['Subscription Status', 'Payment Method'],
+    values='Count',
+    title='Payment Method Usage by Subscription Status',
+)
+fig.update_traces(
+    textinfo='label+percent entry',
+    insidetextorientation='radial',
+    hoverinfo='text+value',
+)
+fig.show()
+
 # %%[markdown]
 # # Correlation
 
 label_encoder = preprocessing.LabelEncoder()
 
-new_df['Gender'] = label_encoder.fit_transform(new_df['Gender'])
-new_df['Item Purchased'] = label_encoder.fit_transform(new_df['Item Purchased'])
-new_df['Category'] = label_encoder.fit_transform(new_df['Category'])
-new_df['Location'] = label_encoder.fit_transform(new_df['Location'])
-new_df['Size'] = label_encoder.fit_transform(new_df['Size'])
-new_df['Color'] = label_encoder.fit_transform(new_df['Color'])
-new_df['Season'] = label_encoder.fit_transform(new_df['Season'])
-new_df['Subscription Status'] = label_encoder.fit_transform(new_df['Subscription Status'])
-new_df['Shipping Type'] = label_encoder.fit_transform(new_df['Shipping Type'])
-new_df['Discount Applied'] = label_encoder.fit_transform(new_df['Discount Applied'])
-new_df['Promo Code Used'] = label_encoder.fit_transform(new_df['Promo Code Used'])
-new_df['Payment Method'] = label_encoder.fit_transform(new_df['Payment Method'])
-new_df['Frequency of Purchases'] = label_encoder.fit_transform(new_df['Frequency of Purchases'])
+df['Gender'] = label_encoder.fit_transform(new_df['Gender'])
+df['Item Purchased'] = label_encoder.fit_transform(new_df['Item Purchased'])
+df['Category'] = label_encoder.fit_transform(new_df['Category'])
+df['Location'] = label_encoder.fit_transform(new_df['Location'])
+df['Size'] = label_encoder.fit_transform(new_df['Size'])
+df['Color'] = label_encoder.fit_transform(new_df['Color'])
+df['Season'] = label_encoder.fit_transform(new_df['Season'])
+df['Subscription Status'] = label_encoder.fit_transform(new_df['Subscription Status'])
+df['Shipping Type'] = label_encoder.fit_transform(new_df['Shipping Type'])
+df['Discount Applied'] = label_encoder.fit_transform(new_df['Discount Applied'])
+df['Promo Code Used'] = label_encoder.fit_transform(new_df['Promo Code Used'])
+df['Payment Method'] = label_encoder.fit_transform(new_df['Payment Method'])
+df['Frequency of Purchases'] = label_encoder.fit_transform(new_df['Frequency of Purchases'])
 
 plt.figure(figsize=(16,10))
 ax = sns.heatmap(df.corr(numeric_only=True), annot=True)
