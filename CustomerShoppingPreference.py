@@ -111,9 +111,16 @@ df.describe(include='all')
 # - The minimum age in the dataset is 18, and the minimum purchase amount is 20.
 # - The maximum age in the dataset is 70, and the maximum purchase amount is 100.
 
+
+
+
+
+
+
 # %%
 
 new_df = df.copy()
+
 
 # %%[markdown]
 # # EDA [Exploratory Data Analysis]
@@ -289,7 +296,6 @@ plt.show()
 # 
 # Product category sales vs season
 
-
 # %%[markdown]
 # # Modeling 
 # In our modeling approach, we will employ a combination of K-Nearest Neighbors (KNN), Logistic Regression, and Random Forest algorithms.
@@ -297,7 +303,6 @@ plt.show()
 # Our objective is to unravel the intricate relationships between different features and the subscription outcome, shedding light on which variables exert the most significant influence in predicting subscription status. 
 # By leveraging these diverse modeling approaches, we aim to gain a comprehensive understanding of the interplay between various factors and the likelihood of subscription, ultimately contributing valuable insights to our predictive analytics framework.
 #
-# * KNN 
 # * Logistic regression
 # * Random Forest
 
@@ -388,54 +393,6 @@ print("Confusion Matrix:")
 print(conf_matrix)
 print(f"AUC: {roc_auc:.2f}")
 
-# %%[markdown]
-# # Feature Selection.
-# 
-# Feature selection is a critical step in machine learning that involves choosing a subset of relevant features from the original set of variables to improve model performance, reduce overfitting, and enhance interpretability. 
-# In the provided code, feature selection is carried out using a Random Forest classifier, a popular ensemble learning method.
-# This approach leverages the ability of Random Forest to assign importance scores to features and selects those deemed most influential. 
-# The final result is a subset of features that can be considered as the most relevant for predicting subscription status. 
-# This process aids in building more efficient and interpretable models by focusing on the most informative variables.
-#
-#
-#
-import pandas as pd
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectFromModel
-
-
-
-# Preprocess the data: fill missing values and encode categorical variables
-imputer = SimpleImputer(strategy='most_frequent')
-data_imputed = pd.DataFrame(imputer.fit_transform(new_df), columns=df.columns)
-
-# Encode categorical variables
-label_encoder = LabelEncoder()
-categorical_cols = data_imputed.select_dtypes(include=['object']).columns
-
-for col in categorical_cols:
-    data_imputed[col] = label_encoder.fit_transform(data_imputed[col])
-
-# Define the feature matrix X and the target vector y
-X = data_imputed.drop('Subscription Status', axis=1)
-y = label_encoder.fit_transform(data_imputed['Subscription Status'])
-
-# Initialize the Random Forest classifier
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-
-# Fit the Random Forest classifier
-rf.fit(X, y)
-
-# Perform feature selection
-selector = SelectFromModel(estimator=rf, prefit=True)
-X_new = selector.transform(X)
-
-# Get selected feature names
-selected_features = X.columns[(selector.get_support())]
-selected_features.tolist()
-
 
 # %%[markdown]
 # # Random Forrest with feature selection
@@ -449,151 +406,147 @@ selected_features.tolist()
 # The final print statements communicate the accuracy and classification report for easy interpretation and assessment of the model's effectiveness.
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
-
-# We have selected features from the previous step. Let's use those to build the Random Forest model.
-# Split the data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X[selected_features], y, test_size=0.2, random_state=42)
-
-# Initialize the Random Forest classifier
-random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
-
-# Train the classifier on the training set
-random_forest.fit(X_train, y_train)
-
-# Predict on the test set
-y_pred = random_forest.predict(X_test)
-
-# Calculate accuracy
-accuracy = accuracy_score(y_test, y_pred)
-# Generate a classification report
-class_report = classification_report(y_test, y_pred)
-
-accuracy, class_report
-
-# Evaluate the model's performance
-accuracy = accuracy_score(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
-# Print the model's performance
-print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
-print("\nClassification Report:")
-print(classification_rep)
-
-# %%
-
-
-# %%[markdown]
-# # Random Forest without feature selection
-# This is the same model as the previous one but without performing feature selection.
-
-# First, we need to re-run the data preprocessing to ensure the context is correct for the print statements.
-# Load the data
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.impute import SimpleImputer
 
-
 # Check for missing values and fill them with the mode (most frequent value) for simplicity
-imputer = SimpleImputer(strategy='most_frequent')
-data_imputed = pd.DataFrame(imputer.fit_transform(new_df), columns=df.columns)
-
+mode_imputer = SimpleImputer(strategy='most_frequent')
+filled_data = pd.DataFrame(mode_imputer.fit_transform(new_df), columns=df.columns)
 
 # Encode categorical variables
-le = LabelEncoder()
-categorical_columns = data_imputed.select_dtypes(include=['object']).columns
-for column in categorical_columns:
-    data_imputed[column] = le.fit_transform(data_imputed[column].astype(str))
+encoder = LabelEncoder()
+object_columns = filled_data.select_dtypes(include=['object']).columns
+for col in object_columns:
+    filled_data[col] = encoder.fit_transform(filled_data[col].astype(str))
 
-
-# Define the feature matrix X and the target vector y
-X = data_imputed.drop(['Subscription Status'], axis=1)
-y = le.fit_transform(data_imputed['Subscription Status'].astype(str))
-
+# Define the feature matrix features_matrix and the target vector target_vector
+features_matrix = filled_data.drop(['Subscription Status'], axis=1)
+target_vector = encoder.fit_transform(filled_data['Subscription Status'].astype(str))
 
 # Split the data into a training set and a testing set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+features_train, features_test, target_train, target_test = train_test_split(features_matrix, target_vector, test_size=0.2, random_state=42)
 
 # Initialize the Random Forest classifier
-rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-
+forest_model = RandomForestClassifier(n_estimators=100, random_state=42)
 
 # Train the classifier
-rf_classifier.fit(X_train, y_train)
+forest_model.fit(features_train, target_train)
+predicted_train = forest_model.predict(features_train)
 
-
+# Calculate accuracy on the training set
+training_accuracy = accuracy_score(target_train, predicted_train)
 # Make predictions on the testing set
-y_pred = rf_classifier.predict(X_test)
-
+predicted_target = forest_model.predict(features_test)
 
 # Evaluate the model's performance
-accuracy = accuracy_score(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
+model_accuracy = accuracy_score(target_test, predicted_target)
+report_classification = classification_report(target_test, predicted_target)
 
+print(f"Training Accuracy of the Random Forest model: {training_accuracy:.2f}")
+print(f"Testing Accuracy of the Random Forest model: {model_accuracy:.2f}")
 
 # Print the model's performance
-print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
+print(f"Accuracy of the Random Forest model: {model_accuracy:.2f}")
 print("\nClassification Report:")
-print(classification_rep)
+print(report_classification)
 
+predicted_prob = forest_model.predict_proba(features_test)[:, 1]  # Probabilities for the positive class
+roc_value = roc_auc_score(target_test, predicted_prob)
 
 # %%
-# # Cross Vlidation 
-
+# # Cross Validation
 from sklearn.model_selection import cross_val_score
 
 # ... [previous code for data loading, preprocessing, and Random Forest model setup] ...
 
 # Define the number of folds for cross-validation
-n_folds = 5
+cv_fold_count = 5
 
 # Perform cross-validation
-cv_scores = cross_val_score(rf_classifier, X, y, cv=n_folds)
+cv_results = cross_val_score(forest_model, features_matrix, target_vector, cv=cv_fold_count)
 
 # Print the results of cross-validation
-print(f"Cross-Validation Accuracy Scores for {n_folds} folds: {cv_scores}")
-print(f"Average CV Accuracy Score: {cv_scores.mean():.2f}")
-
+print(f"Cross-Validation Accuracy Scores for {cv_fold_count} folds: {cv_results}")
+print(f"Average CV Accuracy Score: {cv_results.mean():.2f}")
 
 # %%
-# # SMOTE ANALYSIS
-from imblearn.over_sampling import SMOTE
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, accuracy_score
 
-# Assuming you have already preprocessed your data and it's stored in 'X' and 'y'
-# where 'X' is your feature matrix and 'y' is your target vector
+# Dropping non-relevant columns and handling missing values if necessary
+# For simplicity, dropping columns with textual data and 'Random Date' as it's not directly relevant
+new_df = new_df.drop(['Customer ID', 'Item Purchased', 'Random Date', 'Festival'], axis=1)
 
-# Define the feature matrix X and the target vector y
-X = data_imputed.drop(['Subscription Status'], axis=1)
-y = le.fit_transform(data_imputed['Subscription Status'].astype(str))
+# Handling missing values - assuming filling with the most frequent value for simplicity
+new_df.fillna(new_df.mode().iloc[0], inplace=True)
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Encoding categorical variables
+categorical_columns = new_df.select_dtypes(include=['object']).columns
+label_encoders = {col: LabelEncoder() for col in categorical_columns}
+for col in categorical_columns:
+    new_df[col] = label_encoders[col].fit_transform(df[col])
 
-# Initialize SMOTE
-smote = SMOTE()
+# Splitting the data into features and target
+X = new_df.drop('Subscription Status', axis=1)
+y = new_df['Subscription Status']
 
-# Apply SMOTE to the training data
-X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+# Standardizing the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
-# Now X_train_smote and y_train_smote have balanced classes
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
-# Initialize the Random Forest classifier
-rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+# Applying KNN classifier
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
 
-# Train the classifier with the balanced dataset
-rf_classifier.fit(X_train_smote, y_train_smote)
+# Making predictions and evaluating the model
+y_pred_train = knn.predict(X_train)
+y_pred_test = knn.predict(X_test)
+train_accuracy = accuracy_score(y_train, y_pred_train)
+test_accuracy = accuracy_score(y_test, y_pred_test)
 
-# Make predictions on the testing set
-y_pred = rf_classifier.predict(X_test)
+train_accuracy, test_accuracy, classification_report(y_test, y_pred_test)
 
-# Evaluate the model's performance
-accuracy = accuracy_score(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
+
+
+# %%[markdown]
+
+# # KNN
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.impute import SimpleImputer
+from sklearn.neighbors import KNeighborsClassifier
+import pandas as pd
+
+
+
+# Define the feature matrix and the target vector
+features_matrix = filled_data.drop(['Subscription Status'], axis=1)
+target_vector = encoder.fit_transform(filled_data['Subscription Status'].astype(str))
+
+# Split the data into a training set and a testing set
+features_train, features_test, target_train, target_test = train_test_split(features_matrix, target_vector, test_size=0.2, random_state=42)
+
+# Initialize the KNN classifier
+knn_model = KNeighborsClassifier(n_neighbors=5)  # n_neighbors can be tuned
+
+# Train the classifier
+knn_model.fit(features_train, target_train)
+
+# Make predictions on the training and testing sets
+predicted_train_knn = knn_model.predict(features_train)
+predicted_test_knn = knn_model.predict(features_test)
+
+# Calculate and print the accuracies
+training_accuracy_knn = accuracy_score(target_train, predicted_train_knn)
+testing_accuracy_knn = accuracy_score(target_test, predicted_test_knn)
 
 # Print the model's performance
 print(f"Accuracy of the Random Forest model with SMOTE: {accuracy:.2f}")
