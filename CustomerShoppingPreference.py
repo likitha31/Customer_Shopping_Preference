@@ -296,26 +296,6 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
 
-# Load your dataset
-# df = pd.read_csv('path_to_your_dataset.csv')  # Replace with your actual file path
-
-# Initialize the LabelEncoder
-le = LabelEncoder()
-
-# List comprehension to filter columns that need encoding
-col_list = [col for col in df.columns if (df[col].dtype == 'object') and (col != 'Subscription Status')]
-
-# Apply LabelEncoder to each categorical column
-for i in col_list:
-    df[i] = le.fit_transform(df[i])
-
-# Convert 'Subscription Status' to a binary column: 'Yes' to 1, everything else to 0
-df['Subscription Status'] = np.where(df['Subscription Status'] == 'Yes', 1, 0)
-# Assuming 'Subscription Status' has been converted to 1 and 0
-subscription_counts = df['Subscription Status'].value_counts()
-
-# Display the counts
-print(subscription_counts)
 
 
 
