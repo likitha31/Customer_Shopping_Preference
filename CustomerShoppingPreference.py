@@ -137,8 +137,17 @@ new_df = df.copy()
 #   -  correlation : Product category sales vs season
 
 #%%[markdown]
+
+# heatmap of Frequency of purchases VS Subscription Status
+
 cross_table = pd.crosstab(df['Frequency of Purchases'], df['Subscription Status'])
 sns.heatmap(cross_table, cmap="YlGnBu", annot=True, fmt="d")
+plt.title("Frequency of Purchases by Subscription Status")
+plt.xlabel("Subscription Status")
+plt.ylabel("Frequency of Purchases")
+
+
+plt.show()
 
 # %%[markdown]
 # # Maps
