@@ -84,7 +84,8 @@ df.describe(include='all')
 #
 #
 df.isnull().sum()
-
+df['Festival'].fillna('no festival', inplace=True)
+print(df.head())
 #
 #
 # %%[markdown]
