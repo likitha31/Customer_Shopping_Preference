@@ -394,54 +394,6 @@ print("Confusion Matrix:")
 print(conf_matrix)
 print(f"AUC: {roc_auc:.2f}")
 
-# %%[markdown]
-# # Feature Selection.
-# 
-# Feature selection is a critical step in machine learning that involves choosing a subset of relevant features from the original set of variables to improve model performance, reduce overfitting, and enhance interpretability. 
-# In the provided code, feature selection is carried out using a Random Forest classifier, a popular ensemble learning method.
-# This approach leverages the ability of Random Forest to assign importance scores to features and selects those deemed most influential. 
-# The final result is a subset of features that can be considered as the most relevant for predicting subscription status. 
-# This process aids in building more efficient and interpretable models by focusing on the most informative variables.
-#
-#
-#
-import pandas as pd
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectFromModel
-
-
-
-# Preprocess the data: fill missing values and encode categorical variables
-imputer = SimpleImputer(strategy='most_frequent')
-data_imputed = pd.DataFrame(imputer.fit_transform(new_df), columns=df.columns)
-
-# Encode categorical variables
-label_encoder = LabelEncoder()
-categorical_cols = data_imputed.select_dtypes(include=['object']).columns
-
-for col in categorical_cols:
-    data_imputed[col] = label_encoder.fit_transform(data_imputed[col])
-
-# Define the feature matrix X and the target vector y
-X = data_imputed.drop('Subscription Status', axis=1)
-y = label_encoder.fit_transform(data_imputed['Subscription Status'])
-
-# Initialize the Random Forest classifier
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-
-# Fit the Random Forest classifier
-rf.fit(X, y)
-
-# Perform feature selection
-selector = SelectFromModel(estimator=rf, prefit=True)
-X_new = selector.transform(X)
-
-# Get selected feature names
-selected_features = X.columns[(selector.get_support())]
-selected_features.tolist()
-
 
 # %%[markdown]
 # # Random Forrest with feature selection
@@ -454,46 +406,7 @@ selected_features.tolist()
 # This information offers a comprehensive evaluation of the Random Forest model's performance in predicting subscription status. 
 # The final print statements communicate the accuracy and classification report for easy interpretation and assessment of the model's effectiveness.
 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
 
-# We have selected features from the previous step. Let's use those to build the Random Forest model.
-# Split the data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X[selected_features], y, test_size=0.2, random_state=42)
-
-# Initialize the Random Forest classifier
-random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
-
-# Train the classifier on the training set
-random_forest.fit(X_train, y_train)
-
-# Predict on the test set
-y_pred = random_forest.predict(X_test)
-
-# Calculate accuracy
-accuracy = accuracy_score(y_test, y_pred)
-# Generate a classification report
-class_report = classification_report(y_test, y_pred)
-
-accuracy, class_report
-
-# Evaluate the model's performance
-accuracy = accuracy_score(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
-# Print the model's performance
-print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
-print("\nClassification Report:")
-print(classification_rep)
-
-# %%
-
-
-# %%[markdown]
-# # Random Forest without feature selection
-# This is the same model as the previous one but without performing feature selection.
-
-# First, we need to re-run the data preprocessing to ensure the context is correct for the print statements.
-# Load the data
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -545,11 +458,6 @@ print(classification_rep)
 
 y_prob = rf_classifier.predict_proba(X_test)[:, 1]  # Probabilities for the positive class
 roc_auc = roc_auc_score(y_test, y_prob)
-
-# Print the ROC-AUC
-print(f"ROC-AUC Score: {roc_auc:.2f}")
-
-
 
 # %%
 # # Cross Vlidation 
