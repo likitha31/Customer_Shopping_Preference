@@ -59,17 +59,6 @@ df.columns
 print('The datatype of each column and null count :')
 df.info
 
-# %%[markdown]
-# Descriptive statistics
-# 
-# Descriptive statistics is essential tools for summarizing, exploring, and understanding data.
-# It provides the basis for further analysis and interpretation.
-# To obtain descriptive statistics for our DataFrame, we can use the describe() method in pandas.
-
-df.describe(include='all')
-
-# %%[markdown]
-# Add info from descriptive statistics...
 
 # %%[markdown]
 # Data cleaning 
@@ -81,26 +70,50 @@ df.describe(include='all')
 # Handling Missing Values:
 # %%[markdown]
 
-# * Missing values: 
+# * Missing and NaN values: 
 # 
 # can involve removing rows or columns with missing values, imputing missing values using statistical methods, or using more advanced techniques like machine learning-based imputation.
 #
 #
-df.isnull().sum()
+# There are few NaN values in Festival column lets replace them with no festival
+
+print("The number of missing values :", df.isnull().sum())
+print("")
 df['Festival'].fillna('no festival', inplace=True)
 print(df.head())
 #
 #
+
+
 # %%[markdown]
 
 # * Deduplication:
 # 
 # Identify and remove duplicate records from the dataset to avoid redundancy and ensure accuracy in analysis.
 #
-#s
+#
 print(df.duplicated().sum())
 #
 #
+
+# %%[markdown]
+# Descriptive statistics
+# 
+# Descriptive statistics is essential tools for summarizing, exploring, and understanding data.
+# It provides the basis for further analysis and interpretation.
+# To obtain descriptive statistics for our DataFrame, we can use the describe() method in pandas.
+
+df.describe(include='all')
+
+# %%[markdown]
+# From descriptive statistics we can observe the following
+# - The mean age is approximately 44.07, and the mean purchase amount is approximately 59.76.
+# - The minimum age in the dataset is 18, and the minimum purchase amount is 20.
+# - The maximum age in the dataset is 70, and the maximum purchase amount is 100.
+
+# %%
+
+new_df = df.copy()
 # %%[markdown]
 # # EDA [Exploratory Data Analysis]
 # Exploratory Data Analysis (EDA) is a critical phase in the data analysis process that involves the examination and visualization of a dataset to uncover underlying patterns, relationships, and trends. 
@@ -135,8 +148,8 @@ print(df.duplicated().sum())
 # 
 # 
 # 
-shopping_data = pd.read_csv("shopping_trends_with_festivals.csv")
-aggregated_data = shopping_data.groupby('Location').agg(
+
+aggregated_data = new_df.groupby('Location').agg(
     AverageAmount=pd.NamedAgg(column='Purchase Amount (USD)', aggfunc='mean')  # Change 'sum' to 'mean'
 ).reset_index()
 
@@ -164,12 +177,10 @@ plt.show()
 # # Pie chart
 #
 # subscription status vs Payment Method.
-# the piecharts shows distribution and count of different payment methods grouped by subscription status.
-#  This type of chart is helpful for understanding hierarchical relationships within the data.
 import pandas as pd
 import plotly.express as px
 #
-grouped = df.groupby(['Subscription Status', 'Payment Method']).size().reset_index(name='Count')
+grouped = new_df.groupby(['Subscription Status', 'Payment Method']).size().reset_index(name='Count')
 fig = px.sunburst(
     grouped,
     path=['Subscription Status', 'Payment Method'],
@@ -202,7 +213,7 @@ import pandas as pd
 import plotly.express as px
 
 # First, group by 'Category' and 'Item Purchased' and calculate the size and average 'Review Rating'
-grouped = df.groupby(['Category', 'Item Purchased']).agg(
+grouped = new_df.groupby(['Category', 'Item Purchased']).agg(
     Count=('Item Purchased', 'size'),
     AverageRating=('Review Rating', 'mean')
 ).reset_index()
@@ -230,40 +241,24 @@ fig.show()
 #
 # Frequency of purchases vs  by subscription vs category.
 
-# Group the data by 'Frequency of Purchases', 'Subscription Status', and 'Category'
-grouped = df.groupby(['Frequency of Purchases', 'Subscription Status', 'Category']).size().reset_index(name='Count')
-
-# Create a sunburst chart to visualize the relationship between frequency of purchases, subscription status, and category
-fig = px.sunburst(
-    grouped,
-    path=['Frequency of Purchases', 'Subscription Status', 'Category'],
-    values='Count',
-    title='Purchase Frequency by Subscription Status and Category',
-    width=800,
-    height=800
-)
-
-# Show the figure
-fig.show()
-
 # %%[markdown]
 # # Correlation
 
 label_encoder = preprocessing.LabelEncoder()
 
-df['Gender'] = label_encoder.fit_transform(df['Gender'])
-df['Item Purchased'] = label_encoder.fit_transform(df['Item Purchased'])
-df['Category'] = label_encoder.fit_transform(df['Category'])
-df['Location'] = label_encoder.fit_transform(df['Location'])
-df['Size'] = label_encoder.fit_transform(df['Size'])
-df['Color'] = label_encoder.fit_transform(df['Color'])
-df['Season'] = label_encoder.fit_transform(df['Season'])
-df['Subscription Status'] = label_encoder.fit_transform(df['Subscription Status'])
-df['Shipping Type'] = label_encoder.fit_transform(df['Shipping Type'])
-df['Discount Applied'] = label_encoder.fit_transform(df['Discount Applied'])
-df['Promo Code Used'] = label_encoder.fit_transform(df['Promo Code Used'])
-df['Payment Method'] = label_encoder.fit_transform(df['Payment Method'])
-df['Frequency of Purchases'] = label_encoder.fit_transform(df['Frequency of Purchases'])
+new_df['Gender'] = label_encoder.fit_transform(new_df['Gender'])
+new_df['Item Purchased'] = label_encoder.fit_transform(new_df['Item Purchased'])
+new_df['Category'] = label_encoder.fit_transform(new_df['Category'])
+new_df['Location'] = label_encoder.fit_transform(new_df['Location'])
+new_df['Size'] = label_encoder.fit_transform(new_df['Size'])
+new_df['Color'] = label_encoder.fit_transform(new_df['Color'])
+new_df['Season'] = label_encoder.fit_transform(new_df['Season'])
+new_df['Subscription Status'] = label_encoder.fit_transform(new_df['Subscription Status'])
+new_df['Shipping Type'] = label_encoder.fit_transform(new_df['Shipping Type'])
+new_df['Discount Applied'] = label_encoder.fit_transform(new_df['Discount Applied'])
+new_df['Promo Code Used'] = label_encoder.fit_transform(new_df['Promo Code Used'])
+new_df['Payment Method'] = label_encoder.fit_transform(new_df['Payment Method'])
+new_df['Frequency of Purchases'] = label_encoder.fit_transform(new_df['Frequency of Purchases'])
 
 plt.figure(figsize=(16,10))
 ax = sns.heatmap(df.corr(numeric_only=True), annot=True)
@@ -292,12 +287,6 @@ plt.show()
 
 # %%[markdown]
 # # Logistic regression
-from sklearn.preprocessing import LabelEncoder
-import numpy as np
-import pandas as pd
-
-
-
 
 
 # %%[markdown]
@@ -317,13 +306,11 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 
-# Load the dataset
-file_path = 'shopping_trends_with_festivals.csv'
-data = pd.read_csv(file_path)
+
 
 # Preprocess the data: fill missing values and encode categorical variables
 imputer = SimpleImputer(strategy='most_frequent')
-data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
+data_imputed = pd.DataFrame(imputer.fit_transform(new_df), columns=df.columns)
 
 # Encode categorical variables
 label_encoder = LabelEncoder()
@@ -407,12 +394,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.impute import SimpleImputer
-data = pd.read_csv("shopping_trends_with_festivals.csv")
 
 
 # Check for missing values and fill them with the mode (most frequent value) for simplicity
 imputer = SimpleImputer(strategy='most_frequent')
-data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
+data_imputed = pd.DataFrame(imputer.fit_transform(new_df), columns=df.columns)
 
 
 # Encode categorical variables
@@ -452,6 +438,73 @@ classification_rep = classification_report(y_test, y_pred)
 print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
 print("\nClassification Report:")
 print(classification_rep)
+
+
+# %%
+# # Linear Regression with feature selection
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.preprocessing import LabelEncoder
+from sklearn.compose import ColumnTransformer
+
+
+# Checking the unique values in 'Subscription Status'
+subscription_status_values = new_df['Subscription Status'].unique()
+
+# Encode 'Subscription Status' using Label Encoder as it's a categorical variable
+label_encoder = LabelEncoder()
+new_df['Subscription Status'] = label_encoder.fit_transform(new_df['Subscription Status'])
+
+# Separating the target variable and features
+y = new_df['Subscription Status']
+X = new_df.drop(['Subscription Status'], axis=1)
+
+# Update numerical and categorical columns excluding the target
+numerical_cols = X.select_dtypes(include=['int64', 'float64']).columns
+categorical_cols = X.select_dtypes(include=['object']).columns
+
+numerical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),  # You can change the imputation strategy
+    ('scaler', StandardScaler())
+])
+
+# Categorical data preprocessing
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),  # You can change the imputation strategy
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+# Bundle preprocessing for numerical and categorical data
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numerical_transformer, numerical_cols),
+        ('cat', categorical_transformer, categorical_cols)
+    ])
+
+# Update the model pipeline for logistic regression
+model = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('feature_selector', SelectKBest(f_regression, k=10)),
+    ('model', LogisticRegression())
+])
+
+# Split data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Fit the model
+model.fit(X_train, y_train)
+
+# Predict and evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+classification_rep = classification_report(y_test, y_pred)
+
+subscription_status_values, accuracy, classification_rep
 
 
 # %%
