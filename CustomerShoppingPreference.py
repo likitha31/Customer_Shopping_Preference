@@ -111,9 +111,16 @@ df.describe(include='all')
 # - The minimum age in the dataset is 18, and the minimum purchase amount is 20.
 # - The maximum age in the dataset is 70, and the maximum purchase amount is 100.
 
+
+
+
+
+
+
 # %%
 
 new_df = df.copy()
+
 
 # %%[markdown]
 # # EDA [Exploratory Data Analysis]
@@ -451,11 +458,17 @@ y_pred = rf_classifier.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 classification_rep = classification_report(y_test, y_pred)
 
-
 # Print the model's performance
 print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
 print("\nClassification Report:")
 print(classification_rep)
+
+y_prob = rf_classifier.predict_proba(X_test)[:, 1]  # Probabilities for the positive class
+roc_auc = roc_auc_score(y_test, y_prob)
+
+# Print the ROC-AUC
+print(f"ROC-AUC Score: {roc_auc:.2f}")
+
 
 
 # %%
@@ -474,139 +487,6 @@ cv_scores = cross_val_score(rf_classifier, X, y, cv=n_folds)
 # Print the results of cross-validation
 print(f"Cross-Validation Accuracy Scores for {n_folds} folds: {cv_scores}")
 print(f"Average CV Accuracy Score: {cv_scores.mean():.2f}")
-
-
-# %%
-# # SMOTE ANALYSIS
-from imblearn.over_sampling import SMOTE
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score
-
-# Assuming you have already preprocessed your data and it's stored in 'X' and 'y'
-# where 'X' is your feature matrix and 'y' is your target vector
-
-# Define the feature matrix X and the target vector y
-X = data_imputed.drop(['Subscription Status'], axis=1)
-y = le.fit_transform(data_imputed['Subscription Status'].astype(str))
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Initialize SMOTE
-smote = SMOTE()
-
-# Apply SMOTE to the training data
-X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
-
-# Now X_train_smote and y_train_smote have balanced classes
-
-# Initialize the Random Forest classifier
-rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-
-# Train the classifier with the balanced dataset
-rf_classifier.fit(X_train_smote, y_train_smote)
-
-# Make predictions on the testing set
-y_pred = rf_classifier.predict(X_test)
-
-# Evaluate the model's performance
-accuracy = accuracy_score(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
-
-# Print the model's performance
-print(f"Accuracy of the Random Forest model with SMOTE: {accuracy:.2f}")
-print("\nClassification Report with SMOTE:")
-print(classification_rep)
-
-# %%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # %%
