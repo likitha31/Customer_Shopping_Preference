@@ -306,6 +306,87 @@ plt.show()
 # %%[markdown]
 # # Logistic regression
 
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc
+from imblearn.pipeline import Pipeline as ImbPipeline
+from imblearn.over_sampling import SMOTE
+import matplotlib.pyplot as plt
+
+# Assuming 'new_df' is your original DataFrame
+
+data = new_df.drop(['Customer ID', 'Random Date'], axis=1)
+
+# Selecting features and target variable
+X = data.drop('Subscription Status', axis=1)  # Features
+y = data['Subscription Status']  # Target variable
+
+# Convert 'No' to 0 and 'Yes' to 1 in the target variable
+y_numeric = y.map({'No': 0, 'Yes': 1})
+
+# Identifying categorical and numerical columns
+categorical_cols = X.select_dtypes(include=['object', 'bool']).columns
+numerical_cols = X.select_dtypes(include=['int64', 'float64']).columns
+
+# Creating a column transformer for preprocessing
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', StandardScaler(), numerical_cols),
+        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols)
+    ]
+)
+
+# Splitting the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y_numeric, test_size=0.2, random_state=42)
+
+# Creating a logistic regression pipeline with SMOTE
+logreg_pipeline = ImbPipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('smote', SMOTE(random_state=42)),  # Add SMOTE to the pipeline
+    ('classifier', LogisticRegression(random_state=42))
+])
+
+# Training the logistic regression model with SMOTE
+logreg_pipeline.fit(X_train, y_train)
+
+# Predicting on the test set
+y_pred = logreg_pipeline.predict(X_test)
+
+# Calculating the accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+# Generating a classification report
+class_report = classification_report(y_test, y_pred)
+
+# Generating a confusion matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+# Calculate ROC curve and AUC
+y_pred_proba = logreg_pipeline.predict_proba(X_test)[:, 1]
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+roc_auc = auc(fpr, tpr)
+
+# Plot ROC curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'AUC = {roc_auc:.2f}')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.show()
+
+# Printing the results
+print(f"Accuracy: {accuracy}")
+print("Classification Report:")
+print(class_report)
+print("Confusion Matrix:")
+print(conf_matrix)
+print(f"AUC: {roc_auc:.2f}")
 
 # %%[markdown]
 # # Feature Selection.
