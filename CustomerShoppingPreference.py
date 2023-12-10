@@ -203,15 +203,189 @@ fig.show()
 
 # This will display the treemap with the color scale representing the average review rating
 
-# %%
+# %%[markdown]
 # # Multivariant analysis
 #
 # Frequency of purchases vs  by subscription vs category.
 
-# %%
+# %%[markdown]
 # # Correlation
 # 
 # Product category sales vs season
 
 
+# %%[markdown]
+# # Modeling 
+# In our modeling approach, we will employ a combination of K-Nearest Neighbors (KNN), Logistic Regression, and Random Forest algorithms.
+# These modeling techniques will be instrumental in exploring the predictability of subscription status based on various independent variables.
+# Our objective is to unravel the intricate relationships between different features and the subscription outcome, shedding light on which variables exert the most significant influence in predicting subscription status. 
+# By leveraging these diverse modeling approaches, we aim to gain a comprehensive understanding of the interplay between various factors and the likelihood of subscription, ultimately contributing valuable insights to our predictive analytics framework.
+#
+# * KNN 
+# * Logistic regression
+# * Random Forest
 
+# %%[markdown]
+# # KNN
+
+
+
+# %%[markdown]
+# # Logistic regression
+
+
+# %%[markdown]
+# # Feature Selection.
+# 
+# Feature selection is a critical step in machine learning that involves choosing a subset of relevant features from the original set of variables to improve model performance, reduce overfitting, and enhance interpretability. 
+# In the provided code, feature selection is carried out using a Random Forest classifier, a popular ensemble learning method.
+# This approach leverages the ability of Random Forest to assign importance scores to features and selects those deemed most influential. 
+# The final result is a subset of features that can be considered as the most relevant for predicting subscription status. 
+# This process aids in building more efficient and interpretable models by focusing on the most informative variables.
+#
+#
+#
+import pandas as pd
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
+
+# Load the dataset
+file_path = 'shopping_trends_with_festivals.csv'
+data = pd.read_csv(file_path)
+
+# Preprocess the data: fill missing values and encode categorical variables
+imputer = SimpleImputer(strategy='most_frequent')
+data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
+
+# Encode categorical variables
+label_encoder = LabelEncoder()
+categorical_cols = data_imputed.select_dtypes(include=['object']).columns
+
+for col in categorical_cols:
+    data_imputed[col] = label_encoder.fit_transform(data_imputed[col])
+
+# Define the feature matrix X and the target vector y
+X = data_imputed.drop('Subscription Status', axis=1)
+y = label_encoder.fit_transform(data_imputed['Subscription Status'])
+
+# Initialize the Random Forest classifier
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Fit the Random Forest classifier
+rf.fit(X, y)
+
+# Perform feature selection
+selector = SelectFromModel(estimator=rf, prefit=True)
+X_new = selector.transform(X)
+
+# Get selected feature names
+selected_features = X.columns[(selector.get_support())]
+selected_features.tolist()
+
+
+# %%[markdown]
+# # Random Forrest with feature selection
+# Random Forest is an ensemble learning algorithm that combines the predictions of multiple decision trees to enhance the overall accuracy and robustness of the model. 
+# Each tree in the forest is constructed using a subset of the features and data, and the final prediction is determined by aggregating the results of individual trees. 
+# In this provided code, the Random Forest algorithm is applied to a dataset for predicting the 'Subscription Status' based on selected features. 
+# The data is split into training and test sets, with 80% used for training and 20% for testing. 
+# A Random Forest classifier with 100 trees is initialized and trained on the training set. 
+# The model is then used to predict the target variable on the test set. The code calculates the accuracy of the model and generates a classification report, providing detailed metrics such as precision, recall, and F1-score for each class. 
+# This information offers a comprehensive evaluation of the Random Forest model's performance in predicting subscription status. 
+# The final print statements communicate the accuracy and classification report for easy interpretation and assessment of the model's effectiveness.
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
+
+# We have selected features from the previous step. Let's use those to build the Random Forest model.
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X[selected_features], y, test_size=0.2, random_state=42)
+
+# Initialize the Random Forest classifier
+random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Train the classifier on the training set
+random_forest.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = random_forest.predict(X_test)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+# Generate a classification report
+class_report = classification_report(y_test, y_pred)
+
+accuracy, class_report
+
+# Evaluate the model's performance
+accuracy = accuracy_score(y_test, y_pred)
+classification_rep = classification_report(y_test, y_pred)
+# Print the model's performance
+print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
+print("\nClassification Report:")
+print(classification_rep)
+
+# %%
+
+
+# %%[markdown]
+# # Random Forest without feature selection
+# This is the same model as the previous one but without performing feature selection.
+
+# First, we need to re-run the data preprocessing to ensure the context is correct for the print statements.
+# Load the data
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.impute import SimpleImputer
+data = pd.read_csv("shopping_trends_with_festivals.csv")
+
+
+# Check for missing values and fill them with the mode (most frequent value) for simplicity
+imputer = SimpleImputer(strategy='most_frequent')
+data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
+
+
+# Encode categorical variables
+le = LabelEncoder()
+categorical_columns = data_imputed.select_dtypes(include=['object']).columns
+for column in categorical_columns:
+    data_imputed[column] = le.fit_transform(data_imputed[column].astype(str))
+
+
+# Define the feature matrix X and the target vector y
+X = data_imputed.drop(['Subscription Status'], axis=1)
+y = le.fit_transform(data_imputed['Subscription Status'].astype(str))
+
+
+# Split the data into a training set and a testing set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+# Initialize the Random Forest classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+
+
+# Train the classifier
+rf_classifier.fit(X_train, y_train)
+
+
+# Make predictions on the testing set
+y_pred = rf_classifier.predict(X_test)
+
+
+# Evaluate the model's performance
+accuracy = accuracy_score(y_test, y_pred)
+classification_rep = classification_report(y_test, y_pred)
+
+
+# Print the model's performance
+print(f"Accuracy of the Random Forest model: {accuracy:.2f}")
+print("\nClassification Report:")
+print(classification_rep)
+
+
+# %%
