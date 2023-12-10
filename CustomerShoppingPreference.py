@@ -459,7 +459,6 @@ print(classification_rep)
 
 
 # %%
-
 # # Cross Vlidation 
 
 from sklearn.model_selection import cross_val_score
