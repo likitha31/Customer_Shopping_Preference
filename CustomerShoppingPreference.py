@@ -151,6 +151,11 @@ plt.show()
 
 # %%[markdown]
 # product category sales by Season
+age_bins = [0, 18, 35, 50, float('inf')]
+age_labels = ['0-18', '19-35', '36-50', '51+']
+df['Age Group'] = pd.cut(df['Age'], bins=age_bins, labels=age_labels, right=False)
+plt.figure(figsize=(12, 8))
+
 
 # %%[markdown]
 # # Maps
