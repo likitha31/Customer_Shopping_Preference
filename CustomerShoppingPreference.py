@@ -245,18 +245,21 @@ fig.show()
 import pandas as pd
 import plotly.express as px
 #
-grouped = df.groupby(['Subscription Status', 'Payment Method']).size().reset_index(name='Count')
+
+# Group the data by 'Frequency of Purchases', 'Subscription Status', and 'Category'
+grouped = df.groupby(['Frequency of Purchases', 'Subscription Status', 'Category']).size().reset_index(name='Count')
+
+# Create a sunburst chart to visualize the relationship between frequency of purchases, subscription status, and category
 fig = px.sunburst(
     grouped,
-    path=['Subscription Status', 'Payment Method'],
+    path=['Frequency of Purchases', 'Subscription Status', 'Category'],
     values='Count',
-    title='Payment Method Usage by Subscription Status',
+    title='Purchase Frequency by Subscription Status and Category',
+    width=800,
+    height=800
 )
-fig.update_traces(
-    textinfo='label+percent entry',
-    insidetextorientation='radial',
-    hoverinfo='text+value',
-)
+
+# Show the figure
 fig.show()
 
 # %%[markdown]
@@ -298,13 +301,10 @@ plt.show()
 # * Logistic regression
 # * Random Forest
 
-# %%[markdown]
-# # KNN
-
 
 
 # %%[markdown]
-# # Logistic regression
+# ################################## Logistic regression #################################################
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -603,91 +603,3 @@ print(classification_rep)
 # %%
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# %%
