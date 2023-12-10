@@ -114,6 +114,7 @@ df.describe(include='all')
 # %%
 
 new_df = df.copy()
+
 # %%[markdown]
 # # EDA [Exploratory Data Analysis]
 # Exploratory Data Analysis (EDA) is a critical phase in the data analysis process that involves the examination and visualization of a dataset to uncover underlying patterns, relationships, and trends. 
@@ -441,70 +442,155 @@ print(classification_rep)
 
 
 # %%
-# # Linear Regression with feature selection
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.feature_selection import SelectKBest, f_regression
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.preprocessing import LabelEncoder
-from sklearn.compose import ColumnTransformer
+
+# # Cross Vlidation 
+
+from sklearn.model_selection import cross_val_score
+
+# ... [previous code for data loading, preprocessing, and Random Forest model setup] ...
+
+# Define the number of folds for cross-validation
+n_folds = 5
+
+# Perform cross-validation
+cv_scores = cross_val_score(rf_classifier, X, y, cv=n_folds)
+
+# Print the results of cross-validation
+print(f"Cross-Validation Accuracy Scores for {n_folds} folds: {cv_scores}")
+print(f"Average CV Accuracy Score: {cv_scores.mean():.2f}")
 
 
-# Checking the unique values in 'Subscription Status'
-subscription_status_values = new_df['Subscription Status'].unique()
+# %%
+# # SMOTE ANALYSIS
+from imblearn.over_sampling import SMOTE
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score
 
-# Encode 'Subscription Status' using Label Encoder as it's a categorical variable
-label_encoder = LabelEncoder()
-new_df['Subscription Status'] = label_encoder.fit_transform(new_df['Subscription Status'])
+# Assuming you have already preprocessed your data and it's stored in 'X' and 'y'
+# where 'X' is your feature matrix and 'y' is your target vector
 
-# Separating the target variable and features
-y = new_df['Subscription Status']
-X = new_df.drop(['Subscription Status'], axis=1)
+# Define the feature matrix X and the target vector y
+X = data_imputed.drop(['Subscription Status'], axis=1)
+y = le.fit_transform(data_imputed['Subscription Status'].astype(str))
 
-# Update numerical and categorical columns excluding the target
-numerical_cols = X.select_dtypes(include=['int64', 'float64']).columns
-categorical_cols = X.select_dtypes(include=['object']).columns
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-numerical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='mean')),  # You can change the imputation strategy
-    ('scaler', StandardScaler())
-])
+# Initialize SMOTE
+smote = SMOTE()
 
-# Categorical data preprocessing
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='most_frequent')),  # You can change the imputation strategy
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
+# Apply SMOTE to the training data
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
 
-# Bundle preprocessing for numerical and categorical data
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numerical_transformer, numerical_cols),
-        ('cat', categorical_transformer, categorical_cols)
-    ])
+# Now X_train_smote and y_train_smote have balanced classes
 
-# Update the model pipeline for logistic regression
-model = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('feature_selector', SelectKBest(f_regression, k=10)),
-    ('model', LogisticRegression())
-])
+# Initialize the Random Forest classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 
-# Split data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+# Train the classifier with the balanced dataset
+rf_classifier.fit(X_train_smote, y_train_smote)
 
-# Fit the model
-model.fit(X_train, y_train)
+# Make predictions on the testing set
+y_pred = rf_classifier.predict(X_test)
 
-# Predict and evaluate the model
-y_pred = model.predict(X_test)
+# Evaluate the model's performance
 accuracy = accuracy_score(y_test, y_pred)
 classification_rep = classification_report(y_test, y_pred)
 
-subscription_status_values, accuracy, classification_rep
+# Print the model's performance
+print(f"Accuracy of the Random Forest model with SMOTE: {accuracy:.2f}")
+print("\nClassification Report with SMOTE:")
+print(classification_rep)
+
+# %%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # %%
