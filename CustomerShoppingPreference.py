@@ -107,7 +107,7 @@ print(df.duplicated().sum())
 # * The Data Visualization techniques that we will perform in this project are as follows:
 #   -  Maps: Map of US colored by season.
 #   -  Pie chart: subscription status vs Payment Method.
-#   -  Multivariant analysis: item purchased vs category vs rating review.
+#   -  Tree Map: item purchased vs category vs rating review.
 #   -  Multivariant analysis: Frequency of purchases vs  by subscription vs category.
 #   -  correlation : Product category sales vs season
 
@@ -116,7 +116,9 @@ print(df.duplicated().sum())
 # %%[markdown]
 # # Maps
 #
-# Map of Locations Colored by average Purchase Amount (USD
+# Map of Locations Colored by average Purchase Amount (USD)
+#
+#
 # Maps play a crucial role in visualizing spatial data and geographical patterns. 
 # In the context of data analysis, maps provide an effective means to convey insights related to specific locations. 
 # The provided code exemplifies this concept by generating a map that visualizes the average purchase amount in different locations. 
@@ -161,11 +163,45 @@ plt.show()
 
 
 
-# %%
-# # Multivariant analysis
+# %%[markdown]
+# # Tree Map
 #
 # Item purchased vs category vs rating review.
+#
+#
+# This code conducts a comprehensive analysis of item purchases by category and their associated review ratings.
+# Using Pandas and Plotly Express in Python, the code groups a DataFrame by 'Category' and 'Item Purchased', calculating the count and average review rating for each combination.
+# The results are visualized in a treemap, where categories and specific items are represented by rectangles, with color indicating the average review rating.
+# This visual representation provides an insightful overview of the distribution of purchases, allowing for easy identification of patterns and trends in item preferences across different categories. 
+# The treemap serves as an effective tool for conveying complex relationships in a visually intuitive manner.
+#
+#
+import pandas as pd
+import plotly.express as px
 
+# First, group by 'Category' and 'Item Purchased' and calculate the size and average 'Review Rating'
+grouped = df.groupby(['Category', 'Item Purchased']).agg(
+    Count=('Item Purchased', 'size'),
+    AverageRating=('Review Rating', 'mean')
+).reset_index()
+
+# Then, create a treemap using Plotly Express, with the average 'Review Rating' as the color scale
+fig = px.treemap(
+    grouped,
+    path=['Category', 'Item Purchased'],
+    values='Count',
+    color='AverageRating',
+    color_continuous_scale='RdYlGn',  # Red to Green color scale
+    title='Item Purchased by Category with Review Rating Scale'
+)
+
+fig.update_layout(coloraxis_colorbar=dict(
+    title="Average\nReview Rating"
+))
+
+fig.show()  
+
+# This will display the treemap with the color scale representing the average review rating
 
 # %%
 # # Multivariant analysis
