@@ -136,7 +136,9 @@ new_df = df.copy()
 #   -  Multivariant analysis: Frequency of purchases vs  by subscription vs category.
 #   -  correlation : Product category sales vs season
 
-
+#%%[markdown]
+cross_table = pd.crosstab(df['Frequency of Purchases'], df['Subscription Status'])
+sns.heatmap(cross_table, cmap="YlGnBu", annot=True, fmt="d")
 
 # %%[markdown]
 # # Maps
