@@ -164,6 +164,22 @@ plt.show()
 # # Pie chart
 #
 # subscription status vs Payment Method.
+import pandas as pd
+import plotly.express as px
+#
+grouped = df.groupby(['Subscription Status', 'Payment Method']).size().reset_index(name='Count')
+fig = px.sunburst(
+    grouped,
+    path=['Subscription Status', 'Payment Method'],
+    values='Count',
+    title='Payment Method Usage by Subscription Status',
+)
+fig.update_traces(
+    textinfo='label+percent entry',
+    insidetextorientation='radial',
+    hoverinfo='text+value',
+)
+fig.show()
 
 
 
