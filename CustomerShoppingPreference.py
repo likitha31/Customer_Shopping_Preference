@@ -111,6 +111,7 @@ df.describe(include='all')
 # - The minimum age in the dataset is 18, and the minimum purchase amount is 20.
 # - The maximum age in the dataset is 70, and the maximum purchase amount is 100.
 
+# %%
 
 new_df = df.copy()
 # %%[markdown]
