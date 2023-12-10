@@ -155,7 +155,11 @@ age_bins = [0, 18, 35, 50, float('inf')]
 age_labels = ['0-18', '19-35', '36-50', '51+']
 df['Age Group'] = pd.cut(df['Age'], bins=age_bins, labels=age_labels, right=False)
 plt.figure(figsize=(12, 8))
-
+sns.heatmap(df.groupby(['Season', 'Category'])['Purchase Amount (USD)'].sum().unstack(), cmap='viridis', annot=True, fmt=".2f", linewidths=.5)
+plt.title('Product Category Sales by Season')
+plt.xlabel('Category')
+plt.ylabel('Season')
+plt.show()
 
 # %%[markdown]
 # # Maps
