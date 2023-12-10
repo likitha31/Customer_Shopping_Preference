@@ -59,17 +59,6 @@ df.columns
 print('The datatype of each column and null count :')
 df.info
 
-# %%[markdown]
-# Descriptive statistics
-# 
-# Descriptive statistics is essential tools for summarizing, exploring, and understanding data.
-# It provides the basis for further analysis and interpretation.
-# To obtain descriptive statistics for our DataFrame, we can use the describe() method in pandas.
-
-df.describe(include='all')
-
-# %%[markdown]
-# Add info from descriptive statistics...
 
 # %%[markdown]
 # Data cleaning 
@@ -81,16 +70,21 @@ df.describe(include='all')
 # Handling Missing Values:
 # %%[markdown]
 
-# * Missing values: 
+# * Missing and NaN values: 
 # 
 # can involve removing rows or columns with missing values, imputing missing values using statistical methods, or using more advanced techniques like machine learning-based imputation.
 #
 #
-df.isnull().sum()
+# There are few NaN values in Festival column lets replace them with no festival
+
+print("The number of missing values :", df.isnull().sum())
+print("")
 df['Festival'].fillna('no festival', inplace=True)
 print(df.head())
 #
 #
+
+
 # %%[markdown]
 
 # * Deduplication:
@@ -101,6 +95,22 @@ print(df.head())
 print(df.duplicated().sum())
 #
 #
+
+# %%[markdown]
+# Descriptive statistics
+# 
+# Descriptive statistics is essential tools for summarizing, exploring, and understanding data.
+# It provides the basis for further analysis and interpretation.
+# To obtain descriptive statistics for our DataFrame, we can use the describe() method in pandas.
+
+df.describe(include='all')
+
+# %%[markdown]
+# From descriptive statistics we can observe the following
+# - The mean age is approximately 44.07, and the mean purchase amount is approximately 59.76.
+# - The minimum age in the dataset is 18, and the minimum purchase amount is 20.
+# - The maximum age in the dataset is 70, and the maximum purchase amount is 100.
+
 # %%[markdown]
 # # EDA [Exploratory Data Analysis]
 # Exploratory Data Analysis (EDA) is a critical phase in the data analysis process that involves the examination and visualization of a dataset to uncover underlying patterns, relationships, and trends. 
