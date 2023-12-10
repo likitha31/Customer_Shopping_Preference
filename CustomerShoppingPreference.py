@@ -293,7 +293,6 @@ plt.show()
 # 
 # Product category sales vs season
 
-
 # %%[markdown]
 # # Modeling 
 # In our modeling approach, we will employ a combination of K-Nearest Neighbors (KNN), Logistic Regression, and Random Forest algorithms.
