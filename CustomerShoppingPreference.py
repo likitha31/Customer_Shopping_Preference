@@ -180,27 +180,35 @@ plt.show()
 # 
 # 
 
-aggregated_data = new_df.groupby('Location').agg(
-    AverageAmount=pd.NamedAgg(column='Purchase Amount (USD)', aggfunc='mean')  # Change 'sum' to 'mean'
+aggregated_data = df.groupby('Location').agg(
+    AverageAmount=pd.NamedAgg(column='Purchase Amount (USD)', aggfunc='mean')
 ).reset_index()
 
-# Read GeoDataFrame
+# Load the geographic data
 geo_data = gpd.read_file('cb_2018_us_state_500k.shp')
 
-# Merge shopping data with GeoDataFrame
+# Merge the aggregated shopping data with the geographic data
 merged_data = geo_data.merge(aggregated_data, left_on='NAME', right_on='Location')
 
 # Plotting
-fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+fig, ax = plt.subplots(1, 1, figsize=(15, 10))
 
 # Plot the GeoDataFrame
-merged_data.plot(column='AverageAmount', ax=ax, legend=True, cmap='viridis')  # Color by dominant season
+merged_data.plot(column='AverageAmount', ax=ax, legend=True, cmap='viridis', edgecolor='black')
+
+# Add labels for each state
+for idx, row in merged_data.iterrows():
+    plt.annotate(text=row['NAME'], xy=(row['geometry'].centroid.x, row['geometry'].centroid.y), 
+                 ha='center', fontsize=8)
 
 # Set xlim and ylim to zoom into a specific region (adjust coordinates accordingly)
 ax.set_xlim(-130, -65)  # Adjust these values based on the desired longitude range
 ax.set_ylim(24, 50)     # Adjust these values based on the desired latitude range
 
-plt.title('Map of Locations Colored by average Purchase Amount (USD)')
+# Disable grid lines
+ax.grid(False)
+
+plt.title('Map of US States Colored by Average Purchase Amount (USD)')
 plt.show()
 
 
