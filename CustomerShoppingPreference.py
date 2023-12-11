@@ -436,7 +436,7 @@ from sklearn.impute import SimpleImputer
 
 # Check for missing values and fill them with the mode (most frequent value) for simplicity
 mode_imputer = SimpleImputer(strategy='most_frequent')
-filled_data = pd.DataFrame(mode_imputer.fit_transform(new_df), columns=df.columns)
+filled_data = pd.DataFrame(mode_imputer.fit_transform(new_df), columns=new_df.columns)
 
 # Encode categorical variables
 encoder = LabelEncoder()
@@ -574,8 +574,108 @@ testing_accuracy_knn = accuracy_score(target_test, predicted_test_knn)
 # Print the model's performance
 print(f"Accuracy of the Random Forest model with SMOTE: {accuracy:.2f}")
 print("\nClassification Report with SMOTE:")
-print(classification_rep)
+print(classification_report)
 
 # %%
 
 
+
+
+
+# %%
+# # Random Forrest - 2
+
+update_df = new_df.copy()
+update_df['Gender'] = label_encoder.fit_transform(update_df['Gender'])
+update_df['Item Purchased'] = label_encoder.fit_transform(update_df['Item Purchased'])
+update_df['Category'] = label_encoder.fit_transform(update_df['Category'])
+update_df['Location'] = label_encoder.fit_transform(update_df['Location'])
+update_df['Size'] = label_encoder.fit_transform(update_df['Size'])
+update_df['Color'] = label_encoder.fit_transform(update_df['Color'])
+update_df['Season'] = label_encoder.fit_transform(update_df['Season'])
+update_df['Subscription Status'] = label_encoder.fit_transform(update_df['Subscription Status'])
+update_df['Shipping Type'] = label_encoder.fit_transform(update_df['Shipping Type'])
+update_df['Discount Applied'] = label_encoder.fit_transform(update_df['Discount Applied'])
+update_df['Promo Code Used'] = label_encoder.fit_transform(update_df['Promo Code Used'])
+update_df['Payment Method'] = label_encoder.fit_transform(update_df['Payment Method'])
+update_df['Frequency of Purchases'] = label_encoder.fit_transform(update_df['Frequency of Purchases'])
+
+# %%
+X = update_df[['Customer ID', 'Age', 'Gender', 'Item Purchased', 'Category',
+               'Location', 'Size', 'Color', 'Season','Review Rating', 
+               'Subscription Status', 'Shipping Type', 'Discount Applied', 
+               'Previous Purchases', 'Payment Method', 'Frequency of Purchases']]
+
+Y = update_df[['Purchase Amount (USD)']]
+
+
+# %%
+
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.02, random_state=7)
+
+print('x_train:', x_train.shape)
+print('x_test: ', x_test.shape)
+print('y_train:', y_train.shape)
+print('y_test: ', y_test.shape)
+
+# %%
+from sklearn.tree import ExtraTreeRegressor
+from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import RandomForestRegressor
+
+extra_tree = ExtraTreeRegressor(random_state=7)
+extra_tree.fit(x_train, y_train)
+
+reg = BaggingRegressor(extra_tree, random_state=7)
+reg.fit(x_train, y_train)
+
+rfr = RandomForestRegressor(random_state=7)
+rfr.fit(x_train, y_train)
+
+print("R^2 score for ExtraTreeRegressor:", extra_tree.score(x_test, y_test))
+print("R^2 score for BaggingRegressor:", reg.score(x_test, y_test))
+print("R^2 score for RandomForestRegressor:", rfr.score(x_test, y_test))
+
+# %%
+y_true = y_test
+y_pred = rfr.predict(x_test)
+
+def regression_metrics(y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred) # mse
+    mae = mean_absolute_error(y_true, y_pred) # mae
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred)) 
+    return print('mse: {}'.format(mse),
+                 'mae: {}'.format(mae), 
+                 'rmse: {}'.format(rmse), sep='\n' )
+
+    
+regression_metrics(y_true, y_pred)
+
+# %%
+feature_imp = rfr.feature_importances_
+feature_imp
+
+# %%
+plt.figure(figsize=(20, 5))
+
+plt.bar(X.columns, feature_imp)
+plt.xlabel('Feature Labels')
+plt.ylabel('Feature Importance')
+plt.xticks(rotation=50)
+plt.show()
+
+# %%
+
+from pycaret.regression import setup
+
+all_X = update_df.loc[:3800] # 3801 rows × 18 columns
+all_Y = update_df.loc[3801:] # 99 rows × 18 columns
+reg_model = setup(session_id=7, 
+                  data=all_X, 
+                  # test_data=all_Y, 
+                  target='Purchase Amount (USD)', 
+                  normalize=True,
+                  normalize_method='zscore',
+                  transformation=False,
+                  fold_strategy='stratifiedkfold',
+                  use_gpu=True)
