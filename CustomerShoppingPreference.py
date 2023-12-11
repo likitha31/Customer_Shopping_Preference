@@ -111,12 +111,6 @@ df.describe(include='all')
 # - The minimum age in the dataset is 18, and the minimum purchase amount is 20.
 # - The maximum age in the dataset is 70, and the maximum purchase amount is 100.
 
-
-
-
-
-
-
 # %%
 
 new_df = df.copy()
@@ -340,7 +334,13 @@ plt.show()
 
 
 # %%[markdown]
-# ################################## Logistic regression #################################################
+# # Logistic regression
+#
+# The provided Python code utilizes logistic regression to predict a binary target variable, likely related to subscription status. 
+# It preprocesses the data by dropping irrelevant columns, converts categorical variables, and splits the dataset for training and testing. 
+# The logistic regression model is trained using a pipeline that includes preprocessing steps and oversampling with SMOTE. 
+# Performance metrics such as accuracy, a classification report, confusion matrix, and AUC-ROC curve are calculated and visualized. 
+# The code showcases a comprehensive approach to handling imbalanced datasets and evaluating the logistic regression model's predictive performance.
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -426,6 +426,7 @@ print(f"AUC: {roc_auc:.2f}")
 
 
 # %%[markdown]
+
 # # Random Forrest with feature selection
 # Random Forest is an ensemble learning algorithm that combines the predictions of multiple decision trees to enhance the overall accuracy and robustness of the model. 
 # Each tree in the forest is constructed using a subset of the features and data, and the final prediction is determined by aggregating the results of individual trees. 
