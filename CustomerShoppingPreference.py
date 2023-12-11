@@ -479,7 +479,8 @@ predicted_prob = forest_model.predict_proba(features_test)[:, 1]  # Probabilitie
 roc_value = roc_auc_score(target_test, predicted_prob)
 
 # %%
-# # Cross Validation
+# # 5 Fold Cross Validation
+
 from sklearn.model_selection import cross_val_score
 
 # ... [previous code for data loading, preprocessing, and Random Forest model setup] ...
@@ -494,188 +495,92 @@ cv_results = cross_val_score(forest_model, features_matrix, target_vector, cv=cv
 print(f"Cross-Validation Accuracy Scores for {cv_fold_count} folds: {cv_results}")
 print(f"Average CV Accuracy Score: {cv_results.mean():.2f}")
 
+
 # %%
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import classification_report, accuracy_score
+# # Neural Network : MLPClassifier
 
-# Dropping non-relevant columns and handling missing values if necessary
-# For simplicity, dropping columns with textual data and 'Random Date' as it's not directly relevant
-new_df = new_df.drop(['Customer ID', 'Item Purchased', 'Random Date', 'Festival'], axis=1)
+# Explicitly declaring X_train and y_train for the Neural Network Classifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler
 
-# Handling missing values - assuming filling with the most frequent value for simplicity
-new_df.fillna(new_df.mode().iloc[0], inplace=True)
+# Your code here
+scaler = StandardScaler()
+# Use the scaler object as needed
 
-# Encoding categorical variables
-categorical_columns = new_df.select_dtypes(include=['object']).columns
-label_encoders = {col: LabelEncoder() for col in categorical_columns}
-for col in categorical_columns:
-    new_df[col] = label_encoders[col].fit_transform(df[col])
 
-# Splitting the data into features and target
+# Separating features and target variable
 X = new_df.drop('Subscription Status', axis=1)
 y = new_df['Subscription Status']
 
-# Standardizing the features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Identifying categorical and numerical columns
+categorical_cols = X.select_dtypes(include=['object']).columns
+numerical_cols = X.select_dtypes(exclude=['object']).columns
 
-# Splitting the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# Creating a column transformer with OneHotEncoder for categorical features and StandardScaler for numerical features
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', StandardScaler(), numerical_cols),
+        ('cat', OneHotEncoder(), categorical_cols)
+    ])
 
-# Applying KNN classifier
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train)
+# Applying the transformations
+X_transformed = preprocessor.fit_transform(X)
 
-# Making predictions and evaluating the model
-y_pred_train = knn.predict(X_train)
-y_pred_test = knn.predict(X_test)
-train_accuracy = accuracy_score(y_train, y_pred_train)
-test_accuracy = accuracy_score(y_test, y_pred_test)
+# Splitting the dataset into training and test sets again with the properly transformed features
+X_train, X_test, y_train, y_test = train_test_split(X_transformed, y, test_size=0.3, random_state=42)
 
-train_accuracy, test_accuracy, classification_report(y_test, y_pred_test)
+# Neural Network Classifier
+nn_model = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)
+nn_model.fit(X_train, y_train)
+
+# Predictions and Evaluations
+nn_y_pred = nn_model.predict(X_test)
+nn_accuracy = accuracy_score(y_test, nn_y_pred)
+nn_report = classification_report(y_test, nn_y_pred)
+print(f"Accuracy of the Neural Network: {nn_accuracy:.2f}")
+print("\nClassification Report:")
+print(nn_report)
 
 
+# %%
 
-# %%[markdown]
-
-# # KNN
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import classification_report, accuracy_score
-from sklearn.impute import SimpleImputer
-from sklearn.neighbors import KNeighborsClassifier
+# Re-importing necessary libraries as the code execution state was reset
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 
+# Assuming the dataset is already loaded and preprocessed as 'data_imputed'
 
+# Re-preprocessing the data (as the execution state was reset)
+# Separating features and target variable
+X = new_df.drop('Subscription Status', axis=1)
+y = new_df['Subscription Status']
 
-# Define the feature matrix and the target vector
-features_matrix = filled_data.drop(['Subscription Status'], axis=1)
-target_vector = encoder.fit_transform(filled_data['Subscription Status'].astype(str))
+# Identifying categorical and numerical columns
+categorical_cols = X.select_dtypes(include=['object']).columns
+numerical_cols = X.select_dtypes(exclude=['object']).columns
 
-# Split the data into a training set and a testing set
-features_train, features_test, target_train, target_test = train_test_split(features_matrix, target_vector, test_size=0.2, random_state=42)
+# Creating a column transformer with OneHotEncoder for categorical features and StandardScaler for numerical features
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', StandardScaler(), numerical_cols),
+        ('cat', OneHotEncoder(), categorical_cols)
+    ])
 
-# Initialize the KNN classifier
-knn_model = KNeighborsClassifier(n_neighbors=5)  # n_neighbors can be tuned
+# Applying the transformations
+X_transformed = preprocessor.fit_transform(X)
 
-# Train the classifier
-knn_model.fit(features_train, target_train)
+# Neural Network Classifier
+nn_model = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)
 
-# Make predictions on the training and testing sets
-predicted_train_knn = knn_model.predict(features_train)
-predicted_test_knn = knn_model.predict(features_test)
+# Performing cross-validation on the MLP Classifier
+cv_scores_mlp = cross_val_score(nn_model, X_transformed, y, cv=5)
 
-# Calculate and print the accuracies
-training_accuracy_knn = accuracy_score(target_train, predicted_train_knn)
-testing_accuracy_knn = accuracy_score(target_test, predicted_test_knn)
-
-# Print the model's performance
-print(f"Accuracy of the Random Forest model with SMOTE: {accuracy:.2f}")
-print("\nClassification Report with SMOTE:")
-print(classification_report)
-
-# %%
-
-
-
-
+cv_scores_mlp.mean(), cv_scores_mlp.std()
 
 # %%
-# # Random Forrest - 2
-
-update_df = new_df.copy()
-update_df['Gender'] = label_encoder.fit_transform(update_df['Gender'])
-update_df['Item Purchased'] = label_encoder.fit_transform(update_df['Item Purchased'])
-update_df['Category'] = label_encoder.fit_transform(update_df['Category'])
-update_df['Location'] = label_encoder.fit_transform(update_df['Location'])
-update_df['Size'] = label_encoder.fit_transform(update_df['Size'])
-update_df['Color'] = label_encoder.fit_transform(update_df['Color'])
-update_df['Season'] = label_encoder.fit_transform(update_df['Season'])
-update_df['Subscription Status'] = label_encoder.fit_transform(update_df['Subscription Status'])
-update_df['Shipping Type'] = label_encoder.fit_transform(update_df['Shipping Type'])
-update_df['Discount Applied'] = label_encoder.fit_transform(update_df['Discount Applied'])
-update_df['Promo Code Used'] = label_encoder.fit_transform(update_df['Promo Code Used'])
-update_df['Payment Method'] = label_encoder.fit_transform(update_df['Payment Method'])
-update_df['Frequency of Purchases'] = label_encoder.fit_transform(update_df['Frequency of Purchases'])
-
-# %%
-X = update_df[['Customer ID', 'Age', 'Gender', 'Item Purchased', 'Category',
-               'Location', 'Size', 'Color', 'Season','Review Rating', 
-               'Subscription Status', 'Shipping Type', 'Discount Applied', 
-               'Previous Purchases', 'Payment Method', 'Frequency of Purchases']]
-
-Y = update_df[['Purchase Amount (USD)']]
-
-
-# %%
-
-x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.02, random_state=7)
-
-print('x_train:', x_train.shape)
-print('x_test: ', x_test.shape)
-print('y_train:', y_train.shape)
-print('y_test: ', y_test.shape)
-
-# %%
-from sklearn.tree import ExtraTreeRegressor
-from sklearn.ensemble import BaggingRegressor
-from sklearn.ensemble import RandomForestRegressor
-
-extra_tree = ExtraTreeRegressor(random_state=7)
-extra_tree.fit(x_train, y_train)
-
-reg = BaggingRegressor(extra_tree, random_state=7)
-reg.fit(x_train, y_train)
-
-rfr = RandomForestRegressor(random_state=7)
-rfr.fit(x_train, y_train)
-
-print("R^2 score for ExtraTreeRegressor:", extra_tree.score(x_test, y_test))
-print("R^2 score for BaggingRegressor:", reg.score(x_test, y_test))
-print("R^2 score for RandomForestRegressor:", rfr.score(x_test, y_test))
-
-# %%
-y_true = y_test
-y_pred = rfr.predict(x_test)
-
-def regression_metrics(y_true, y_pred):
-    mse = mean_squared_error(y_true, y_pred) # mse
-    mae = mean_absolute_error(y_true, y_pred) # mae
-    rmse = np.sqrt(mean_squared_error(y_true, y_pred)) 
-    return print('mse: {}'.format(mse),
-                 'mae: {}'.format(mae), 
-                 'rmse: {}'.format(rmse), sep='\n' )
-
-    
-regression_metrics(y_true, y_pred)
-
-# %%
-feature_imp = rfr.feature_importances_
-feature_imp
-
-# %%
-plt.figure(figsize=(20, 5))
-
-plt.bar(X.columns, feature_imp)
-plt.xlabel('Feature Labels')
-plt.ylabel('Feature Importance')
-plt.xticks(rotation=50)
-plt.show()
-
-# %%
-
-from pycaret.regression import setup
-
-all_X = update_df.loc[:3800] # 3801 rows × 18 columns
-all_Y = update_df.loc[3801:] # 99 rows × 18 columns
-reg_model = setup(session_id=7, 
-                  data=all_X, 
-                  # test_data=all_Y, 
-                  target='Purchase Amount (USD)', 
-                  normalize=True,
-                  normalize_method='zscore',
-                  transformation=False,
-                  fold_strategy='stratifiedkfold',
-                  use_gpu=True)
