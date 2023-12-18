@@ -487,6 +487,19 @@ print(report_classification)
 predicted_prob = forest_model.predict_proba(features_test)[:, 1]  # Probabilities for the positive class
 roc_value = roc_auc_score(target_test, predicted_prob)
 
+fpr, tpr, thresholds = roc_curve(target_test, predicted_target)
+roc_auc = auc(fpr, tpr)
+
+# Plot ROC curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'AUC = {roc_auc:.2f}')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.show()
+
 # %%
 # # 5 Fold Cross Validation
 
@@ -591,5 +604,59 @@ nn_model = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=4
 cv_scores_mlp = cross_val_score(nn_model, X_transformed, y, cv=5)
 
 cv_scores_mlp.mean(), cv_scores_mlp.std()
+
+# %%
+import matplotlib.pyplot as plt
+
+# Data for the bar plot
+values = [82.5, 98, 93]
+labels = ['Logistic Regression', 'Random Forrest', 'Neural Network']
+
+# Creating the bar plot
+plt.bar(labels, values)
+
+# Adding titles and labels
+plt.title('Bar Plot of accuracy')
+plt.xlabel('Values')
+plt.ylabel('Scores')
+
+# Show the plot
+plt.show()
+
+# %%
+import plotly.express as px
+
+# Data for the plot
+values = [82.5, 98, 93]
+labels = ['Logistic Regression', 'Random Forrest', 'Neural Network']
+data = {'Labels': labels, 'Values': values}
+
+# Creating the bar plot with Plotly Express
+fig = px.bar(data, x='Labels', y='Values', title='Bar Plot of accuracy')
+
+# Show the plot
+fig.show()
+
+# %%
+import pandas as pd
+import numpy as np
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+
+data = df.copy()
+
+# Selecting only the numerical features for VIF computation
+# Dropping 'Customer ID' as it is just an identifier
+numerical_data = data.select_dtypes(include=[np.number]).drop(columns=['Customer ID'])
+
+# Adding a constant for VIF computation
+X = numerical_data.assign(const=1)
+
+# Calculating VIF for each feature
+vif_data = pd.DataFrame()
+vif_data["feature"] = X.columns
+vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.columns))]
+
+vif_data.sort_values("VIF", ascending=False)
 
 # %%
