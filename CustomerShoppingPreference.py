@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 # Load the Dataset
 #
 # 
-df = pd.read_csv("shopping_trends_with_festivals.csv")
+df = pd.read_csv("C:/Users/lkg31/OneDrive/Desktop/Customer_Shopping_Preference/shopping_trends_with_festivals.csv")
 print(df.head())
 
 #%%
@@ -131,7 +131,7 @@ new_df = df.copy()
 #   -  correlation : Product category sales vs season
 
 #%%[markdown]
-
+# # Heatmap
 # heatmap of Frequency of purchases VS Subscription Status
 
 cross_table = pd.crosstab(df['Frequency of Purchases'], df['Subscription Status'])
@@ -179,7 +179,7 @@ aggregated_data = df.groupby('Location').agg(
 ).reset_index()
 
 # Load the geographic data
-geo_data = gpd.read_file('cb_2018_us_state_500k.shp')
+geo_data = gpd.read_file('C:/Users/lkg31/OneDrive/Desktop/Customer_Shopping_Preference/cb_2018_us_state_500k.shp')
 
 # Merge the aggregated shopping data with the geographic data
 merged_data = geo_data.merge(aggregated_data, left_on='NAME', right_on='Location')
@@ -514,7 +514,8 @@ cv_fold_count = 5
 cv_results = cross_val_score(forest_model, features_matrix, target_vector, cv=cv_fold_count)
 
 # Print the results of cross-validation
-print(f"Cross-Validation Accuracy Scores for {cv_fold_count} folds: {cv_results}")
+print(f"Cross-Validation Accuracy Scores for {cv_fold_count} folds")
+print(cv_results)
 print(f"Average CV Accuracy Score: {cv_results.mean():.2f}")
 
 
@@ -565,64 +566,6 @@ print(f"Accuracy of the Neural Network: {nn_accuracy:.2f}")
 print("\nClassification Report:")
 print(nn_report)
 
-
-# %%
-
-# Re-importing necessary libraries as the code execution state was reset
-from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import accuracy_score, classification_report
-import pandas as pd
-
-# Assuming the dataset is already loaded and preprocessed as 'data_imputed'
-
-# Re-preprocessing the data (as the execution state was reset)
-# Separating features and target variable
-X = new_df.drop('Subscription Status', axis=1)
-y = new_df['Subscription Status']
-
-# Identifying categorical and numerical columns
-categorical_cols = X.select_dtypes(include=['object']).columns
-numerical_cols = X.select_dtypes(exclude=['object']).columns
-
-# Creating a column transformer with OneHotEncoder for categorical features and StandardScaler for numerical features
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', StandardScaler(), numerical_cols),
-        ('cat', OneHotEncoder(), categorical_cols)
-    ])
-
-# Applying the transformations
-X_transformed = preprocessor.fit_transform(X)
-
-# Neural Network Classifier
-nn_model = MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)
-
-# Performing cross-validation on the MLP Classifier
-cv_scores_mlp = cross_val_score(nn_model, X_transformed, y, cv=5)
-
-cv_scores_mlp.mean(), cv_scores_mlp.std()
-
-# %%
-import matplotlib.pyplot as plt
-
-# Data for the bar plot
-values = [82.5, 98, 93]
-labels = ['Logistic Regression', 'Random Forrest', 'Neural Network']
-
-# Creating the bar plot
-plt.bar(labels, values)
-
-# Adding titles and labels
-plt.title('Bar Plot of accuracy')
-plt.xlabel('Values')
-plt.ylabel('Scores')
-
-# Show the plot
-plt.show()
-
 # %%
 import plotly.express as px
 
@@ -636,27 +579,5 @@ fig = px.bar(data, x='Labels', y='Values', title='Bar Plot of accuracy')
 
 # Show the plot
 fig.show()
-
-# %%
-import pandas as pd
-import numpy as np
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-
-
-data = df.copy()
-
-# Selecting only the numerical features for VIF computation
-# Dropping 'Customer ID' as it is just an identifier
-numerical_data = data.select_dtypes(include=[np.number]).drop(columns=['Customer ID'])
-
-# Adding a constant for VIF computation
-X = numerical_data.assign(const=1)
-
-# Calculating VIF for each feature
-vif_data = pd.DataFrame()
-vif_data["feature"] = X.columns
-vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.columns))]
-
-vif_data.sort_values("VIF", ascending=False)
 
 # %%
